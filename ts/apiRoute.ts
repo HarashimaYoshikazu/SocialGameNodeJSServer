@@ -16,6 +16,10 @@ exports.Routes = {
 			"/cards" : "userdata#cards",
 			"/items" : "userdata#items",
 			"/quests" : "userdata#quests",
+		},
+		"/ranking" : {
+			"/leaderboard" : "ranking#leaderboard",
+			"/my-info" : "ranking#my-info"
 		}
 	},
 	POST: {
