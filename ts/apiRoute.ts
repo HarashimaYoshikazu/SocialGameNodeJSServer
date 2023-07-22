@@ -17,9 +17,15 @@ exports.Routes = {
 			"/items" : "userdata#items",
 			"/quests" : "userdata#quests",
 		},
+
 		"/ranking" : {
 			"/leaderboard" : "ranking#leaderboard",
 			"/my-info" : "ranking#my-info"
+		},
+
+		"/info" : {
+			"/list" : "info#list",
+			"@id%s"   : "info#getInfo",
 		}
 	},
 	POST: {
@@ -46,6 +52,6 @@ exports.Routes = {
 exports.Auth = {
 	UseSessionAuth: true,
 	PassThroughRoute: {
-		GET: ["stat","gacha"]
+		GET: ["stat","gacha","info"]
 	}
 };
