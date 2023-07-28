@@ -7,9 +7,27 @@ export async function index(req: any,res: any,route: any)
 	return null;
 }
 
-//検索だけならGETリクエスト
-//ただしここのファイルで書くうえでは特にGETとPOSTに差分はない
-export async function getUserName(req: any,res: any,route: any)
+// ランキング全体
+export async function leaderboard(req: any,res: any,route: any)
+{
+	//ユーザ情報はsessionの中に全部入ってる
+	let session = await getCache(route.query.session);
+	if(!session)
+	{
+	  return { status: 200 };
+	}
+
+	//ランキングテーブルから10人分の接情報を検索する
+	const result = await query("SELECT point, userid FROM RankingUser ORDER BY point DESC LIMIT 10",[]);
+	
+	return { 
+		status: 200,
+		result
+	};
+}
+
+//ユーザーの現在のランキング情報
+export async function userInfo(req: any,res: any,route: any)
 {
 	//ユーザ情報はsessionの中に全部入ってる
 	let session = await getCache(route.query.session);
@@ -19,16 +37,22 @@ export async function getUserName(req: any,res: any,route: any)
 	}
 
 	//ランキングテーブルから接続中のプレイヤーの情報を検索する
-	const result = await query("SELECT name FROM User WHERE id = ?",[session.userId]);
+	const point = await query("SELECT point FROM RankingUser WHERE id = ?",[session.userId]);
+	const name = await query("SELECT name FROM User WHERE id = ?",[session.userId]);
 	
+	if(!point)
+	{
+		return { status: 200 };
+	}
 	return { 
 		status: 200,
-		userName: result
+		point: point,
+		userName: name
 	};
 }
 
-//POSTの場合はtokenが更新される
-export async function getUserPoint(req: any,res: any,route: any)
+// セッションのユーザーがポイントを獲得する
+export async function update(req: any,res: any,route: any)
 {
 	//ユーザ情報はsessionの中に全部入ってる
 	let session = await getCache(route.query.session);
@@ -37,29 +61,17 @@ export async function getUserPoint(req: any,res: any,route: any)
 		return { status: 200 };
 	}
 	
-	const result = await query("SELECT point FROM RankingUser WHERE id = ?",[session.userId]);
-	
-	return { 
-		status: 200,
-		point: result
-	};
-}
-
-//何かを更新するならPOSTリクエスト
-//ただしここのファイルで書くうえでは特にGETとPOSTに差分はない
-//POSTの場合はtokenが更新される
-export async function updateUserPoint(req: any,res: any,route: any)
-{
-	//ユーザ情報はsessionの中に全部入ってる
-	let session = await getCache(route.query.session);
-	if(!session)
+	let user = await query("SELECT * FROM RankingUser WHERE userid = ?",[session.userId]);
+	if(!user)
 	{
+		await query("INSERT INTO RankingUser(userid, point) VALUES ( ?, ?)",[session.userId,1]);
 		return { status: 200 };
 	}
+
+	await query("UPDATE RankingUser SET point = point + 1 WHERE userid = ?",[session.userId]);
 	
-	await query("UPDATE User SET point = point + 1 WHERE userid = ?",[session.userId]);
-	
-	return { 
+	return
+	 { 
 		status: 200
 	};
 }

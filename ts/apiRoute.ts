@@ -20,7 +20,7 @@ exports.Routes = {
 
 		"/ranking" : {
 			"/leaderboard" : "ranking#leaderboard",
-			"/my-info" : "ranking#my-info"
+			"/userInfo" : "ranking#userInfo"
 		},
 
 		"/info" : {
@@ -45,7 +45,10 @@ exports.Routes = {
 			"/start" : "quest#start",
 			"/result" : "quest#result",
 			"/continue" : "quest#continue_act"
-		}
+		},
+		"/ranking" : {
+			"/update" : "ranking#update"
+		},
 	}
 }
 
