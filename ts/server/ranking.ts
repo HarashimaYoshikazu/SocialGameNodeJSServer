@@ -18,11 +18,22 @@ export async function leaderboard(req: any,res: any,route: any)
 	}
 
 	//ランキングテーブルから10人分の接情報を検索する
-	const result = await query("SELECT point, userid FROM RankingUser ORDER BY point DESC LIMIT 10",[]);
+	const userId = await query("SELECT userid FROM RankingUser ORDER BY point DESC LIMIT 10",[]);
 	
+	let userData = [];
+	for(var id of userId)
+	{
+		const name = await query("SELECT name FROM User WHERE id = ?",[id]);
+		const point = await query("SELECT point FROM RankingUser WHERE userid = ?",[id]);
+		userData.push({
+			point:point,
+			name:name
+		})
+	}
+
 	return { 
 		status: 200,
-		result
+		userData:userData
 	};
 }
 
@@ -80,6 +91,31 @@ export async function update(req: any,res: any,route: any)
 	}
 
 	await query("UPDATE RankingUser SET point = point + 1 WHERE userid = ?",[session.userId]);
+	
+	return
+	 { 
+		status: 200
+	};
+}
+
+// セッションのユーザーがポイントを獲得する
+export async function join(req: any,res: any,route: any)
+{
+	//ユーザ情報はsessionの中に全部入ってる
+	let session = await getCache(route.query.session);
+	if(!session)
+	{
+		return { status: 200 };
+	}
+	
+	let count = await query("SELECT COUNT(*) FROM RankingUser WHERE userid = ?",[session.userId]);
+	if(count > 0)
+	{
+		console.log('%i', count);
+		console.log('もう登録済み');
+		return { status: 200 };
+	}
+	await query("INSERT INTO RankingUser(userid, point) VALUES ( ?, 0)",[session.userId]);
 	
 	return
 	 { 

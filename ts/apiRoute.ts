@@ -47,7 +47,8 @@ exports.Routes = {
 			"/continue" : "quest#continue_act"
 		},
 		"/ranking" : {
-			"/update" : "ranking#update"
+			"/update" : "ranking#update",
+			"/join" : "ranking#join"
 		},
 	}
 }
